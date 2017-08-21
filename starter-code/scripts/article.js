@@ -46,11 +46,14 @@ Article.loadAll = function(rawData) {
 // This function will retrieve the data from either a local or remote source,
 // and process it, then hand off control to the View.
 Article.fetchAll = function() {
+  var eTag;
   if (localStorage.rawData) {
     // When rawData is already in localStorage,
     // we can load it with the .loadAll function above,
     // and then render the index page (using the proper method on the articleView object).
-     //DONE: What do we pass in to loadAll()?
+    //DONE: What do we pass in to loadAll()
+    console.log(localStorage.eTag);
+
     Article.loadAll(JSON.parse(localStorage.rawData));
     //DONE: What method do we call to render the index page?
     articleView.initIndexPage();
@@ -60,6 +63,20 @@ Article.fetchAll = function() {
     // cache it in localStorage so we can skip the server call next time,
     // then load all the data into Article.all with the .loadAll function above,
     // and then render the index page.
+
+    // STRETCH
+    $.ajax({
+      url: "/data/hackerIpsum.json",
+      method: "HEAD"
+    })
+    .done(function(data, message, xhr) {
+      eTag = xhr.getResponseHeader('eTag');
+      localStorage.eTag = eTag;
+    })
+    .fail(function(error) {
+      console.log(error);
+    });
+
     $.getJSON("/data/hackerIpsum.json").then(function(data) {
       //console.log(data);
       localStorage.rawData = JSON.stringify(data);
