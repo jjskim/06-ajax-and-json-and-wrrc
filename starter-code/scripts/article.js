@@ -46,17 +46,37 @@ Article.loadAll = function(rawData) {
 // This function will retrieve the data from either a local or remote source,
 // and process it, then hand off control to the View.
 Article.fetchAll = function() {
-  var eTag;
   if (localStorage.rawData) {
     // When rawData is already in localStorage,
     // we can load it with the .loadAll function above,
     // and then render the index page (using the proper method on the articleView object).
     //DONE: What do we pass in to loadAll()
-    console.log(localStorage.eTag);
 
-    Article.loadAll(JSON.parse(localStorage.rawData));
+    $.ajax({
+      url: '/data/hackerIpsum.json',
+      method: 'HEAD'
+    })
+    .done(function(data, message, xhr) {
+      var eTag = xhr.getResponseHeader('eTag');
+      if (eTag === localStorage.eTag) {
+        Article.loadAll(JSON.parse(localStorage.rawData));
+        articleView.initIndexPage();
+      } else {
+        $.getJSON('/data/hackerIpsum.json').then(function(data) {
+          localStorage.rawData = JSON.stringify(data);
+          Article.loadAll(JSON.parse(localStorage.rawData));
+          articleView.initIndexPage();
+        },
+        function(error) {
+          console.log(error);
+        });
+      }
+    })
+    .fail(function(error) {
+      console.log(error);
+    });
+
     //DONE: What method do we call to render the index page?
-    articleView.initIndexPage();
   } else {
     // DONE: When we don't already have the rawData,
     // we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?),
@@ -66,19 +86,17 @@ Article.fetchAll = function() {
 
     // STRETCH
     $.ajax({
-      url: "/data/hackerIpsum.json",
-      method: "HEAD"
+      url: '/data/hackerIpsum.json',
+      method: 'HEAD'
     })
     .done(function(data, message, xhr) {
-      eTag = xhr.getResponseHeader('eTag');
-      localStorage.eTag = eTag;
+      localStorage.eTag = xhr.getResponseHeader('eTag');
     })
     .fail(function(error) {
       console.log(error);
     });
 
-    $.getJSON("/data/hackerIpsum.json").then(function(data) {
-      //console.log(data);
+    $.getJSON('/data/hackerIpsum.json').then(function(data) {
       localStorage.rawData = JSON.stringify(data);
       Article.loadAll(JSON.parse(localStorage.rawData));
       articleView.initIndexPage();
