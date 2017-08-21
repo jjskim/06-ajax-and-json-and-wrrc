@@ -43,6 +43,17 @@ Article.loadAll = function(rawData) {
   })
 }
 
+Article.setLocalStorage = function(path) {
+  $.getJSON(path).then(function(data) {
+    localStorage.rawData = JSON.stringify(data);
+    Article.loadAll(JSON.parse(localStorage.rawData));
+    articleView.initIndexPage();
+  },
+  function(error) {
+    console.log(error);
+  });
+}
+
 // This function will retrieve the data from either a local or remote source,
 // and process it, then hand off control to the View.
 Article.fetchAll = function() {
@@ -62,14 +73,7 @@ Article.fetchAll = function() {
         Article.loadAll(JSON.parse(localStorage.rawData));
         articleView.initIndexPage();
       } else {
-        $.getJSON('/data/hackerIpsum.json').then(function(data) {
-          localStorage.rawData = JSON.stringify(data);
-          Article.loadAll(JSON.parse(localStorage.rawData));
-          articleView.initIndexPage();
-        },
-        function(error) {
-          console.log(error);
-        });
+        Article.setLocalStorage('/data/hackerIpsum.json');
       }
     })
     .fail(function(error) {
@@ -95,14 +99,6 @@ Article.fetchAll = function() {
     .fail(function(error) {
       console.log(error);
     });
-
-    $.getJSON('/data/hackerIpsum.json').then(function(data) {
-      localStorage.rawData = JSON.stringify(data);
-      Article.loadAll(JSON.parse(localStorage.rawData));
-      articleView.initIndexPage();
-    },
-    function(error) {
-      console.log(error);
-    });
+    Article.setLocalStorage('/data/hackerIpsum.json');
   }
 }
